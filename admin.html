@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>御膳房 · 管理后台</title>
+    <style>
+        :root {
+            --primary: #ff9a9e;
+            --secondary: #fecfef;
+            --bg: #faf5f5;
+            --card-bg: #ffffff;
+            --text: #5c4a4a;
+            --shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --danger: #e74c3c;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            padding: 16px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            font-size: 1.5rem;
+            color: white;
+            letter-spacing: 2px;
+        }
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            padding: 30px 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            margin-top: 40px;
+        }
+        .login-box h2 { margin-bottom: 16px; }
+        .login-box input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #ddd;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            text-align: center;
+        }
+        .login-box button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: var(--primary);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .tab-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 12px;
+            background: white;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: var(--shadow);
+            transition: background 0.2s;
+            text-align: center;
+            min-width: 80px;
+        }
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+        .panel {
+            display: none;
+        }
+        .panel.active {
+            display: block;
+        }
+        .hidden { display: none !important; }
+        .list-item {
+            background: white;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .list-item .info {
+            flex: 1;
+        }
+        .list-item .info .title {
+            font-weight: 600;
+        }
+        .list-item .info .sub {
+            font-size: 0.8rem;
+            color: #888;
+        }
+        .btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            margin-left: 4px;
+        }
+        .btn-edit {
+            background: #f0e0e0;
+            color: var(--text);
+        }
+        .btn-del {
+            background: #fee;
+            color: var(--danger);
+        }
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .form-group {
+            margin-bottom: 12px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 4px;
+            font-size: 0.9rem;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+        .form-group textarea {
+            min-height: 60px;
+            resize: vertical;
+        }
+        .form-row {
+            display: flex;
+            gap: 8px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-top: 8px;
+            background: #f0e6e6;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+        .modal-content h3 {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .close-btn {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #888;
+        }
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🏯 御膳房 · 管理后台</h1>
+    </header>
+
+    <!-- 登录界面 -->
+    <div id="loginView" class="container">
+        <div class="login-box">
+            <h2>🔐 管理员登录</h2>
+            <input type="password" id="passwordInput" placeholder="请输入密码" />
+            <button id="loginBtn">进入后台</button>
+        </div>
+    </div>
+
+    <!-- 后台主界面 -->
+    <div id="adminView" class="container hidden">
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="dishes">🍽️ 菜式管理</button>
+            <button class="tab-btn" data-tab="categories">📂 分类管理</button>
+            <button class="tab-btn" data-tab="orders">📋 订单记录</button>
+            <button class="tab-btn" data-tab="settings">⚙️ 设置</button>
+        </div>
+
+        <!-- 菜式管理 -->
+        <div class="panel active" id="panel-dishes">
+            <button class="btn-add" id="addDishBtn">➕ 新增菜式</button>
+            <div id="dishList"></div>
+        </div>
+
+        <!-- 分类管理 -->
+        <div class="panel" id="panel-categories">
+            <button class="btn-add" id="addCategoryBtn">➕ 新增分类</button>
+            <div id="categoryList"></div>
+        </div>
+
+        <!-- 订单记录 -->
+        <div class="panel" id="panel-orders">
+            <div id="orderList"></div>
+        </div>
+
+        <!-- 设置 -->
+        <div class="panel" id="panel-settings">
+            <div class="list-item">
+                <div class="info">
+                    <div class="title">修改密码</div>
+                    <div class="sub">（当前版本暂不支持，需通过环境变量修改）</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 菜式编辑弹窗 -->
+    <div class="modal" id="dishModal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeDishModal">&times;</button>
+            <h3 id="dishModalTitle">新增菜式</h3>
+            <input type="hidden" id="dishId" />
+            <div class="form-group">
+                <label>菜名 *</label>
+                <input type="text" id="dishName" placeholder="如：红烧肉" />
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>分类 *</label>
+                    <select id="dishCategory"></select>
+                </div>
+                <div class="form-group">
+                    <label>排序（数字越小越靠前）</label>
+                    <input type="number" id="dishSort" value="0" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>描述</label>
+                <textarea id="dishDesc" placeholder="一句话介绍"></textarea>
+            </div>
+            <div class="form-group">
+                <label>口味标签（逗号分隔）</label>
+                <input type="text" id="dishTags" placeholder="如：偏甜,下饭" />
+            </div>
+            <div class="form-group">
+                <label>所需食材（逗号分隔）</label>
+                <input type="text" id="dishIngredients" placeholder="如：五花肉,冰糖,生抽" />
+            </div>
+            <div class="form-group">
+                <label>是否上架</label>
+                <select id="dishAvailable">
+                    <option value="true">上架</option>
+                    <option value="false">下架</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>菜式图片</label>
+                <input type="file" id="dishImageFile" accept="image/*" />
+                <img id="dishImagePreview" class="image-preview hidden" />
+                <input type="hidden" id="dishImageUrl" />
+            </div>
+            <button class="btn-add" id="saveDishBtn">保存</button>
+        </div>
+    </div>
+
+    <!-- 分类编辑弹窗 -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-content">
+            <button class="close-btn" id="closeCategoryModal">&times;</button>
+            <h3 id="categoryModalTitle">新增分类</h3>
+            <input type="hidden" id="categoryId" />
+            <div class="form-group">
+                <label>分类名称 *</label>
+                <input type="text" id="categoryName" placeholder="如：热菜" />
+            </div>
+            <div class="form-group">
+                <label>排序</label>
+                <input type="number" id="categorySort" value="0" />
+            </div>
+            <button class="btn-add" id="saveCategoryBtn">保存</button>
+        </div>
+    </div>
+
+    <!-- 全局加载遮罩 -->
+    <div class="loading-overlay hidden" id="loadingOverlay">加载中...</div>
+
+    <script>
+        const API_BASE = '/api'; // 后端接口前缀
+        let dishes = [];
+        let categories = [];
+        let currentTab = 'dishes';
+
+        // ========== 工具函数 ==========
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (show) overlay.classList.remove('hidden');
+            else overlay.classList.add('hidden');
+        }
+
+        async function apiFetch(url, options = {}) {
+            try {
+                const res = await fetch(url, options);
+                if (!res.ok) {
+                    const errText = await res.text();
+                    throw new Error(errText || `请求失败 (${res.status})`);
+                }
+                return await res.json();
+            } catch (e) {
+                console.error('API error:', e);
+                alert('操作失败：' + e.message);
+                throw e;
+            }
+        }
+
+        // ========== 登录 ==========
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const pwd = document.getElementById('passwordInput').value;
+            if (!pwd) { alert('请输入密码'); return; }
+            showLoading(true);
+            try {
+                const result = await apiFetch(`${API_BASE}/check-password`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd })
+                });
+                if (result.success) {
+                    sessionStorage.setItem('adminLoggedIn', 'true');
+                    document.getElementById('loginView').classList.add('hidden');
+                    document.getElementById('adminView').classList.remove('hidden');
+                    loadAllData();
+                } else {
+                    alert('密码错误！');
+                }
+            } catch (e) {
+                // apiFetch 已经 alert 了
+            } finally {
+                showLoading(false);
+            }
+        });
+
+        // ========== 数据加载 ==========
+        async function loadAllData() {
+            showLoading(true);
+            try {
+                await Promise.all([loadCategories(), loadDishes(), loadOrders()]);
+                renderAll();
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadCategories() {
+            categories = await apiFetch(`${API_BASE}/admin?type=categories`);
+        }
+
+        async function loadDishes() {
+            dishes = await apiFetch(`${API_BASE}/admin?type=dishes`);
+        }
+
+        async function loadOrders() {
+            window.orders = await apiFetch(`${API_BASE}/admin?type=orders`);
+        }
+
+        function renderAll() {
+            renderCategoriesList();
+            renderDishesList();
+            renderOrdersList();
+            fillCategorySelect();
+        }
+
+        // ========== 分类管理 ==========
+        function renderCategoriesList() {
+            const container = document.getElementById('categoryList');
+            if (!categories || categories.length === 0) {
+                container.innerHTML = '<p style="color:#aaa;">暂无分类，请添加</p>';
+                return;
+            }
+            let html = '';
+            categories.forEach(cat => {
+                html += `
+                    <div class="list-item">
+                        <div class="info">
+                            <div class="title">${cat.name}</div>
+                            <div class="sub">排序：${cat.sort_order}</div>
+                        </div>
+                        <div>
+                            <button class="btn btn-edit" data-id="${cat.id}" data-name="${cat.name}" data-sort="${cat.sort_order}">编辑</button>
+                            <button class="btn btn-del" data-id="${cat.id}">删除</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            container.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    openCategoryModal(parseInt(btn.dataset.id), btn.dataset.name, parseInt(btn.dataset.sort));
+                });
+            });
+            container.querySelectorAll('.btn-del').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (!confirm('确定删除该分类？分类下的菜式也会被删除。')) return;
+                    const id = parseInt(btn.dataset.id);
+                    showLoading(true);
+                    try {
+                        await apiFetch(`${API_BASE}/admin`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ type: 'category', id })
+                        });
+                        await loadCategories();
+                        await loadDishes();
+                        renderAll();
+                    } finally {
+                        showLoading(false);
+                    }
+                });
+            });
+        }
+
+        function openCategoryModal(id, name, sort) {
+            document.getElementById('categoryModalTitle').textContent = id ? '编辑分类' : '新增分类';
+            document.getElementById('categoryId').value = id || '';
+            document.getElementById('categoryName').value = name || '';
+            document.getElementById('categorySort').value = sort || 0;
+            document.getElementById('categoryModal').classList.add('active');
+        }
+
+        document.getElementById('addCategoryBtn').addEventListener('click', () => openCategoryModal(null, '', 0));
+        document.getElementById('closeCategoryModal').addEventListener('click', () => {
+            document.getElementById('categoryModal').classList.remove('active');
+        });
+
+        document.getElementById('saveCategoryBtn').addEventListener('click', async function() {
+            const btn = this;
+            const id = document.getElementById('categoryId').value;
+            const name = document.getElementById('categoryName').value.trim();
+            const sort_order = parseInt(document.getElementById('categorySort').value) || 0;
+            if (!name) { alert('请输入分类名称'); return; }
+            btn.disabled = true;
+            btn.textContent = '保存中...';
+            showLoading(true);
+            try {
+                if (id) {
+                    await apiFetch(`${API_BASE}/admin`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: 'category', id: parseInt(id), name, sort_order })
+                    });
+                } else {
+                    await apiFetch(`${API_BASE}/admin`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ type: 'category', name, sort_order })
+                    });
+                }
+                document.getElementById('categoryModal').classList.remove('active');
+                await loadCategories();
+                renderAll();
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '保存';
+                showLoading(false);
+            }
+        });
+
+        // ========== 菜式管理 ==========
+        function fillCategorySelect() {
+            const select = document.getElementById('dishCategory');
+            let html = '<option value="">请选择分类</option>';
+            categories.forEach(cat => {
+                html += `<option value="${cat.id}">${cat.name}</option>`;
+            });
+            select.innerHTML = html;
+        }
+
+        function renderDishesList() {
+            const container = document.getElementById('dishList');
+            if (!dishes || dishes.length === 0) {
+                container.innerHTML = '<p style="color:#aaa;">暂无菜式，点击上方添加</p>';
+                return;
+            }
+            let html = '';
+            dishes.forEach(dish => {
+                const catName = dish.category_name || '未分类';
+                const imgHtml = dish.image_url ? `<img src="${dish.image_url}" style="width:40px;height:40px;object-fit:cover;border-radius:6px;" />` : '';
+                html += `
+                    <div class="list-item">
+                        <div class="info">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                ${imgHtml}
+                                <div>
+                                    <div class="title">${dish.name} ${dish.is_available ? '' : '<span style="color:#e74c3c;font-size:0.7rem;">[已下架]</span>'}</div>
+                                    <div class="sub">${catName} | 排序：${dish.sort_order}${dish.ingredients ? ' | 食材：'+dish.ingredients : ''}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <button class="btn btn-edit" data-id="${dish.id}">编辑</button>
+                            <button class="btn btn-del" data-id="${dish.id}">删除</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            container.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', () => openDishModal(parseInt(btn.dataset.id)));
+            });
+            container.querySelectorAll('.btn-del').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (!confirm('确定删除该菜式？')) return;
+                    const id = parseInt(btn.dataset.id);
+                    showLoading(true);
+                    try {
+                        await apiFetch(`${API_BASE}/admin`, {
+                            method: 'DELETE',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ type: 'dish', id })
+                        });
+                        await loadDishes();
+                        renderAll();
+                    } finally {
+                        showLoading(false);
+                    }
+                });
+            });
+        }
+
+        function openDishModal(id) {
+            const dish = dishes.find(d => d.id === id);
+            document.getElementById('dishModalTitle').textContent = id ? '编辑菜式' : '新增菜式';
+            document.getElementById('dishId').value = id || '';
+            document.getElementById('dishName').value = dish ? dish.name : '';
+            document.getElementById('dishCategory').value = dish ? dish.category_id : '';
+            document.getElementById('dishSort').value = dish ? dish.sort_order : 0;
+            document.getElementById('dishDesc').value = dish ? (dish.description || '') : '';
+            document.getElementById('dishTags').value = dish ? (dish.tags || '') : '';
+            document.getElementById('dishIngredients').value = dish ? (dish.ingredients || '') : '';
+            document.getElementById('dishAvailable').value = dish ? (dish.is_available ? 'true' : 'false') : 'true';
+            document.getElementById('dishImageUrl').value = dish ? (dish.image_url || '') : '';
+            const preview = document.getElementById('dishImagePreview');
+            if (dish && dish.image_url) {
+                preview.src = dish.image_url;
+                preview.classList.remove('hidden');
+            } else {
+                preview.classList.add('hidden');
+            }
+            document.getElementById('dishImageFile').value = ''; // 清空文件选择
+            document.getElementById('dishModal').classList.add('active');
+        }
+
+        document.getElementById('addDishBtn').addEventListener('click', () => {
+            fillCategorySelect();
+            openDishModal(null);
+        });
+        document.getElementById('closeDishModal').addEventListener('click', () => {
+            document.getElementById('dishModal').classList.remove('active');
+        });
+
+        // 图片上传预览（本地预览，实际上传在后端处理）
+        document.getElementById('dishImageFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            // 校验文件大小（2MB）
+            if (file.size > 2 * 1024 * 1024) {
+                alert('图片大小不能超过 2MB');
+                e.target.value = '';
+                return;
+            }
+            // 本地预览
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const preview = document.getElementById('dishImagePreview');
+                preview.src = ev.target.result;
+                preview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+            // 标记有图片待上传
+            document.getElementById('dishImageUrl').value = 'pending_upload';
+        });
+
+        document.getElementById('saveDishBtn').addEventListener('click', async function() {
+            const btn = this;
+            const id = document.getElementById('dishId').value;
+            const name = document.getElementById('dishName').value.trim();
+            const category_id = document.getElementById('dishCategory').value;
+            const sort_order = parseInt(document.getElementById('dishSort').value) || 0;
+            const description = document.getElementById('dishDesc').value.trim();
+            const tags = document.getElementById('dishTags').value.trim();
+            const ingredients = document.getElementById('dishIngredients').value.trim();
+            const is_available = document.getElementById('dishAvailable').value === 'true';
+            const image_url = document.getElementById('dishImageUrl').value.trim();
+
+            if (!name || !category_id) { alert('请填写菜名并选择分类'); return; }
+
+            btn.disabled = true;
+            btn.textContent = '保存中...';
+            showLoading(true);
+            try {
+                // 处理图片上传：如果有待上传的图片
+                let finalImageUrl = image_url;
+                const fileInput = document.getElementById('dishImageFile');
+                if (fileInput.files.length > 0) {
+                    const file = fileInput.files[0];
+                    // 压缩并上传到后端
+                    const compressedBlob = await compressImage(file, 800, 800, 0.8);
+                    const formData = new FormData();
+                    formData.append('file', compressedBlob, 'image.jpg');
+                    const uploadRes = await fetch(`${API_BASE}/upload-image`, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    if (!uploadRes.ok) throw new Error('图片上传失败');
+                    const uploadData = await uploadRes.json();
+                    finalImageUrl = uploadData.url;
+                }
+
+                const body = {
+                    type: 'dish',
+                    id: id ? parseInt(id) : null,
+                    name,
+                    category_id: parseInt(category_id),
+                    sort_order,
+                    description,
+                    tags,
+                    ingredients,
+                    is_available,
+                    image_url: finalImageUrl || ''
+                };
+                if (id) {
+                    await apiFetch(`${API_BASE}/admin`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                } else {
+                    await apiFetch(`${API_BASE}/admin`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(body)
+                    });
+                }
+                document.getElementById('dishModal').classList.remove('active');
+                await loadDishes();
+                renderAll();
+            } catch (e) {
+                // apiFetch 已经 alert 了
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '保存';
+                showLoading(false);
+            }
+        });
+
+        function compressImage(file, maxWidth, maxHeight, quality) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height = height * (maxWidth / width);
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width = width * (maxHeight / height);
+                                height = maxHeight;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        canvas.toBlob((blob) => {
+                            resolve(blob);
+                        }, 'image/jpeg', quality);
+                    };
+                };
+            });
+        }
+
+        // ========== 订单记录 ==========
+        function renderOrdersList() {
+            const container = document.getElementById('orderList');
+            if (!window.orders || window.orders.length === 0) {
+                container.innerHTML = '<p style="color:#aaa;">暂无订单</p>';
+                return;
+            }
+            let html = '';
+            window.orders.forEach(order => {
+                const items = order.items;
+                let itemsText = '';
+                if (Array.isArray(items)) {
+                    itemsText = items.map(item => `${item.name} x${item.qty}`).join('、');
+                } else {
+                    itemsText = JSON.stringify(items);
+                }
+                const date = new Date(order.created_at).toLocaleString('zh-CN');
+                html += `
+                    <div class="list-item">
+                        <div class="info">
+                            <div class="title">${itemsText}</div>
+                            <div class="sub">${order.message ? '留言：' + order.message : ''} | ${date}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // ========== 标签切换 ==========
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const tab = btn.dataset.tab;
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('panel-' + tab).classList.add('active');
+            });
+        });
+
+        // ========== 点击弹窗背景关闭 ==========
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // ========== 初始检查登录状态 ==========
+        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('adminView').classList.remove('hidden');
+            loadAllData();
+        }
+    </script>
+</body>
+</html>
